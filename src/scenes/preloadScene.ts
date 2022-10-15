@@ -4,11 +4,7 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('desert', 'assets/img/desert.png');
-    this.load.image('forest', 'assets/img/forest.png');
-    this.load.image('plain', 'assets/img/plain.png');
-    this.load.image('sea', 'assets/img/sea.png');
-    this.load.image('thicket', 'assets/img/thicket.png');
+    this.load.spritesheet('terrain', 'assets/img/terrain.png', { frameWidth: 16, frameHeight: 16 });
   }
 
   create() {
