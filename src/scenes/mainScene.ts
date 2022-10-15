@@ -1,4 +1,5 @@
 import { makeMap } from '../helpers/makeMap';
+import { setCamera } from '../helpers/setCamera';
 
 export default class MainScene extends Phaser.Scene {
   //emitter: Phaser.Events.EventEmitter;
@@ -10,7 +11,8 @@ export default class MainScene extends Phaser.Scene {
   async create() {
     //this.emitter = new Phaser.Events.EventEmitter();
     
-    makeMap(this);
+    makeMap(this, 30, 20);
+    setCamera(this);
 
 
     // Add debugging hotkeys
