@@ -1,8 +1,13 @@
-import Tile from "../objects/tiles/tile";
+import Tile from "../objects/tile";
 import { createNoise2D } from 'simplex-noise';
 
-export function makeMap(scene: Phaser.Scene, emitter: Phaser.Events.EventEmitter, widthInTiles: number, heightInTiles: number) {
-  let tileGroup = [];
+export function makeMap(
+  scene: Phaser.Scene,
+  tiles: Phaser.GameObjects.Group,
+  emitter: Phaser.Events.EventEmitter,
+  widthInTiles: number,
+  heightInTiles: number
+  ) {
   const noise2D = createNoise2D();
   for (let row = 0; row < heightInTiles; row++) {
     for (let col = 0; col < widthInTiles; col++) {
@@ -26,10 +31,10 @@ export function makeMap(scene: Phaser.Scene, emitter: Phaser.Events.EventEmitter
         noise: noise
       });
       scene.add.existing(tile);
-      tileGroup.push(tile);
+      tiles.add(tile);
     }
   }
-  Phaser.Actions.GridAlign(tileGroup, {
+  Phaser.Actions.GridAlign(tiles.getChildren(), {
     width: widthInTiles,
     height: heightInTiles,
     cellWidth: 16 * 4,
