@@ -20,9 +20,13 @@ export default class MainScene extends Phaser.Scene {
       emitter: this.emitter
     }));
 
+    this.add.existing(new Character(this, 12 * 16 * 4, 8 * 16 * 4, 'badChar', 0, {
+      emitter: this.emitter
+    }));
+
     // Add debugging hotkeys
     this.input.keyboard.on('keydown-R', () => {
       this.scene.restart();
-    });
+    }); //
   }
 }

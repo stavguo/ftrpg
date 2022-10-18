@@ -26,7 +26,7 @@ export default class Tile extends Phaser.GameObjects.Image {
       let clickDelay = this.scene.time.now - lastTime;
       lastTime = this.scene.time.now;
       if(clickDelay < 350) {
-          this.emitter.emit('centerOn', this.x, this.y);
+          this.emitter.emit('selectTile', this.x, this.y);
       }
     });   
   }

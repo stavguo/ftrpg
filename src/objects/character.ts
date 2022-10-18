@@ -18,68 +18,76 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.emitter = data['emitter'];
     this.selected = false;
 
-    // Create flashing tween
-    this.selectedTween = this.scene.add.tween({
-      targets: this,
-      duration: 1000,
-      ease: Phaser.Math.Easing.Linear,
-      repeat: -1,
-      paused: true,
-      alpha: {
-        getStart: () => 0.1,
-        getEnd: () => 1
-      }
-    });
-
     // Double click listener
     let lastTime = 0;
     this.on("pointerdown", ()=>{
       let clickDelay = this.scene.time.now - lastTime;
       lastTime = this.scene.time.now;
       if(clickDelay < 350) {
-        if (this.selected) {
-          this.unselect();
-        } else {
-          this.select();
-        }
+        this.emitter.emit('selectChar', this);
       }
     });   
 
-    this.emitter.on('centerOn', this.move, this);
+    this.emitter.on('selectTile', (x: number, y: number) => {
+      if (this.selected) this.move(x, y);
+    }, this);
+
+    this.emitter.on('selectChar', (char: Character) => {
+      if (this === char) {
+        if (this.selected) {
+          this.selected = false;
+          this.stopSelectTween();
+          this.emitter.emit('selectChar', null);
+        } else {
+          this.selected = true;
+          this.startSelectTween();
+        }
+      } else {
+        if (this.selected) {
+          this.selected = false;
+          this.stopSelectTween();
+        }
+      }
+    })
   }
 
-  select() {
-    this.emitter.emit('centerOn', this.x, this.y);
-    this.selected = true;
-    this.emitter.emit('charSelect', true);
-    this.selectedTween.play();
+  startSelectTween() {
+    // Create flashing tween
+    this.selectedTween = this.scene.add.tween({
+      targets: this,
+      duration: 1000,
+      ease: Phaser.Math.Easing.Linear,
+      repeat: -1,
+      paused: false,
+      alpha: {
+        getStart: () => 0.1,
+        getEnd: () => 1
+      }
+    });
   }
 
-  unselect() {
-    this.selected = false;
-    this.emitter.emit('charSelect', false);
+  stopSelectTween() {
     this.selectedTween.stop();
+    this.selectedTween.remove();
     this.setAlpha(1);
   }
 
   move(newX: number, newY: number) {
-    if (this.selected) {
-      this.unselect();
-      let dist = Math.sqrt(Math.pow(newX - this.x, 2) + Math.pow(newY - this.y, 2))
-      let duration = dist * 2.5;
-      this.emitter.emit('moveChar', newX, newY, duration);
-      this.scene.add.tween({
-        targets: this,
-        duration: duration,
-        ease: Phaser.Math.Easing.Linear,
-        x: newX
-      });
-      this.scene.add.tween({
-        targets: this,
-        duration: duration,
-        ease: Phaser.Math.Easing.Linear,
-        y: newY
-      });
-    }
+    this.stopSelectTween();
+    let dist = Math.sqrt(Math.pow(newX - this.x, 2) + Math.pow(newY - this.y, 2))
+    let duration = dist * 2.5;
+    this.scene.add.tween({
+      targets: this,
+      duration: duration,
+      ease: Phaser.Math.Easing.Linear,
+      x: newX
+    });
+    this.scene.add.tween({
+      targets: this,
+      duration: duration,
+      ease: Phaser.Math.Easing.Linear,
+      y: newY
+    });
+    this.selected = false;
   }
 }
