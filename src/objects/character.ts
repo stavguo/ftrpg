@@ -39,7 +39,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
       miniMapColor = 0xea3e3e;
     }
     // mini-mini-map is 10 times smaller than 15/10 tile view
-    this.miniMapItem = new Phaser.GameObjects.Rectangle(this.scene,  (11.5 * 16 * 4) + (this.x/(5 * 2)), (0.5 * 16 * 4) + (this.y/(5 * 2)), 4, 4, miniMapColor)
+    this.miniMapItem = new Phaser.GameObjects.Rectangle(this.scene,  (11.5 * 16 * 4) + (this.x/(5 * 2)), (0.5 * 16 * 4) + (this.y/(5 * 2)), 6.5, 6.5, miniMapColor)
       .setOrigin(0)
       .setScrollFactor(0)
       .setDepth(1);

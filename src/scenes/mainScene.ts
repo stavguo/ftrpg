@@ -14,6 +14,8 @@ export default class MainScene extends Phaser.Scene {
   }
 
   async create() {
+    this.add.shader('ocean', 0, 0, 960 * 2, 640 * 2).setOrigin(0);
+
     this.emitter = new Phaser.Events.EventEmitter();
     this.tiles = this.add.group();
     this.miniMapItems = this.add.group();
@@ -36,7 +38,8 @@ export default class MainScene extends Phaser.Scene {
       items: this.miniMapItems
     }));
 
-    setCamera(this, this.emitter, this.miniMapItems);
+    setCamera(this, this.emitter);
+    
 
     // Add debugging hotkeys
     this.input.keyboard.on('keydown-R', () => {

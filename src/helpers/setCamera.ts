@@ -1,6 +1,6 @@
 import Character from "../objects/character";
 
-export function setCamera(scene: Phaser.Scene, emitter: Phaser.Events.EventEmitter, items: Phaser.GameObjects.Group) {
+export function setCamera(scene: Phaser.Scene, emitter: Phaser.Events.EventEmitter) {
   // Initialize camera
   let cam = scene.cameras.main;
   cam.setBounds(0,0, (240 * 4) * 2, (160 * 4) * 2);

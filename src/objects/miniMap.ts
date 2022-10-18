@@ -11,16 +11,17 @@ export default class MiniMap extends Phaser.GameObjects.Rectangle {
     data: object
   ) {
     super(scene, x, y, width, height);
-    this.setStrokeStyle(4, 0xffffff, 0.8);
+    this.setStrokeStyle(1, 0xffffff, 0.8);
     this.setScrollFactor(0);
     this.setOrigin(0);
+    this.setFillStyle(0x000, 0.1)
     this.items = data['items'];
     this.emitter = data['emitter'];
     this.items.add(this);
 
     let smallRect = new Phaser.GameObjects.Rectangle(this.scene, 11.5 * 16 * 4, 0.5 * 16 * 4, 1.5 * 16 * 4, 1 * 16 * 4);
     smallRect
-      .setStrokeStyle(4, 0xffffff, 0.8)
+      .setStrokeStyle(1, 0xffffff, 0.8)
       .setOrigin(0)
       .setScrollFactor(-0.1);
     this.scene.add.existing(smallRect);
