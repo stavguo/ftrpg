@@ -10,6 +10,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
   possibleTiles: Tile[];
   currentTile: Tile;
   distance: number;
+  color: number;
 
   constructor(
     scene: any,
@@ -44,14 +45,13 @@ export default class Character extends Phaser.GameObjects.Sprite {
     });
 
     // Make MiniMap Item
-    let miniMapColor: number;
     if (this.texture.key === 'goodChar') {
-      miniMapColor = 0x5151bf;
+      this.color = 0x5151bf;
     } else if (this.texture.key === 'badChar') {
-      miniMapColor = 0xea3e3e;
+      this.color = 0xea3e3e;
     }
     // mini-mini-map is 10 times smaller than 15/10 tile view
-    this.miniMapItem = new Phaser.GameObjects.Rectangle(this.scene,  (11.5 * 16 * 4) + (this.x/(5 * 2)), (0.5 * 16 * 4) + (this.y/(5 * 2)), 6.5, 6.5, miniMapColor)
+    this.miniMapItem = new Phaser.GameObjects.Rectangle(this.scene,  (11.5 * 16 * 4) + (this.x/(5 * 2)), (0.5 * 16 * 4) + (this.y/(5 * 2)), 6.5, 6.5, this.color)
       .setOrigin(0)
       .setScrollFactor(0)
       .setDepth(1);
@@ -80,7 +80,8 @@ export default class Character extends Phaser.GameObjects.Sprite {
 
   select() {
     this.selected = true;
-    this.possibleTiles.forEach((el) => el.setTint(0x7DD0D7,0xffffff,0xffffff,0xffffff));
+    if (this.texture.key === 'goodChar') this.possibleTiles.forEach((el) => el.setTint(0x7DD0D7,0xffffff,0xffffff,0xffffff));
+    if (this.texture.key === 'badChar') this.possibleTiles.forEach((el) => el.setTint(0xd77d7d,0xffffff,0xffffff,0xffffff));
     this.startSelectTween();
   }
 
