@@ -21,16 +21,12 @@ export default class Tile extends Phaser.GameObjects.Image {
     this.emitter = data['emitter'];
     this.noise = data['noise'];
 
-    if (frame === 0) {
-      //this.setVisible(false);
-    }
-
     let lastTime = 0;
     this.on("pointerdown", ()=>{
       let clickDelay = this.scene.time.now - lastTime;
       lastTime = this.scene.time.now;
       if(clickDelay < 350) {
-          this.emitter.emit('selectTile', this.x, this.y);
+        this.emitter.emit('focus', this);
       }
     });   
   }

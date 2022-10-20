@@ -29,7 +29,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.distance = data['distance'];
 
     this.selected = false;
-    this.currentTile = this.tiles[((x/64) * 30) + (y/64)]; // 30 = width of board in tiles
+    this.currentTile = this.tiles[((y/64) * 30) + (x/64)]; // 30 = width of board in tiles
     this.manhattan(this.tiles, this.currentTile, this.distance);
 
     // Double click listener
@@ -38,7 +38,8 @@ export default class Character extends Phaser.GameObjects.Sprite {
       let clickDelay = this.scene.time.now - lastTime;
       lastTime = this.scene.time.now;
       if(clickDelay < 350) {
-        this.emitter.emit('selectChar', this);
+        //this.emitter.emit('selectChar', this);
+        this.emitter.emit('focus', this);
       }
     });
 
@@ -49,7 +50,6 @@ export default class Character extends Phaser.GameObjects.Sprite {
     } else if (this.texture.key === 'badChar') {
       miniMapColor = 0xea3e3e;
     }
-
     // mini-mini-map is 10 times smaller than 15/10 tile view
     this.miniMapItem = new Phaser.GameObjects.Rectangle(this.scene,  (11.5 * 16 * 4) + (this.x/(5 * 2)), (0.5 * 16 * 4) + (this.y/(5 * 2)), 6.5, 6.5, miniMapColor)
       .setOrigin(0)
@@ -59,34 +59,38 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.scene.add.existing(this.miniMapItem);
 
 
-    this.emitter.on('selectTile', (x: number, y: number) => {
-      if (this.selected) this.move(x, y);
-    }, this);
-
-    this.emitter.on('selectChar', (char: Character) => {
-      if (this === char) {
+    this.emitter.on('focus', (obj: Tile | Character) => {
+      if (obj === this) {
         if (this.selected) {
-          this.selected = false;
-          this.possibleTiles.forEach((el) => el.clearTint());
-          this.stopSelectTween();
-          this.emitter.emit('selectChar', null);
+          this.deselect();
         } else {
-          this.selected = true;
-          this.possibleTiles.forEach((el) => el.setTint(0x7DD0D7,0xffffff,0xffffff,0xffffff));
-          this.startSelectTween();
+          this.select();
         }
       } else {
         if (this.selected) {
-          this.selected = false;
-          this.possibleTiles.forEach((el) => el.clearTint());
-          this.stopSelectTween();
+          this.deselect();
+          if (obj instanceof Tile && this.possibleTiles.includes(this.tiles[((obj.y/64) * 30) + (obj.x/64)])) {
+            //this.emitter.emit('moveChar', this.currentTile.x, this.currentTile.y, x, y);
+            this.move(obj.x, obj.y);
+          }
         }
       }
-    });
+    }, this);
+  }
+
+  select() {
+    this.selected = true;
+    this.possibleTiles.forEach((el) => el.setTint(0x7DD0D7,0xffffff,0xffffff,0xffffff));
+    this.startSelectTween();
+  }
+
+  deselect() {
+    this.selected = false;
+    this.possibleTiles.forEach((el) => el.clearTint());
+    this.stopSelectTween();
   }
 
   startSelectTween() {
-    // Create flashing tween
     this.selectedTween = this.scene.add.tween({
       targets: this,
       duration: 1000,
@@ -107,8 +111,6 @@ export default class Character extends Phaser.GameObjects.Sprite {
   }
 
   move(newX: number, newY: number) {
-    this.stopSelectTween();
-    this.possibleTiles.forEach((el) => el.clearTint());
     this.currentTile = this.tiles[((newY/64) * 30) + (newX/64)];
     let dist = Math.sqrt(Math.pow(newX - this.x, 2) + Math.pow(newY - this.y, 2))
     let duration = dist * 2.5;
@@ -125,7 +127,6 @@ export default class Character extends Phaser.GameObjects.Sprite {
       y: newY
     });
     this.miniMapItem.setPosition((11.5 * 16 * 4) + (newX/(5 * 2)), (0.5 * 16 * 4) + (newY/(5 * 2)));
-    this.selected = false;
     this.manhattan(this.tiles, this.currentTile, this.distance);
   }
 

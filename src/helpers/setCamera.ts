@@ -1,4 +1,5 @@
 import Character from "../objects/character";
+import Tile from "../objects/tile";
 
 export function setCamera(scene: Phaser.Scene, emitter: Phaser.Events.EventEmitter) {
   // Initialize camera
@@ -27,32 +28,16 @@ export function setCamera(scene: Phaser.Scene, emitter: Phaser.Events.EventEmitt
     }
   });
 
-
-
-  // Keep of selected character, pan to character when selected
-  let selectedChar: Character = null;
-  emitter.on('selectChar', (char: Character) => {
-    selectedChar = char;
-    if (char !== null) {
-      cam.pan(
-        selectedChar.x + (8 * 4),
-        selectedChar.y, 500,
-        Phaser.Math.Easing.Quadratic.InOut
-      );
-    }
+  emitter.on('focus', (obj: Tile | Character) => {
+    cam.pan(obj.x + (8 * 4), obj.y, 500, Phaser.Math.Easing.Quadratic.InOut);
   });
 
-  emitter.on('selectTile', (x: number, y: number) => {
-    // Follow selected character to selected tile
-    if (selectedChar !== null) {
-      let dist = Math.sqrt(Math.pow(x - selectedChar.x, 2) + Math.pow(y - selectedChar.y, 2))
-      let duration = dist * 2.5;
-      cam.pan(x + (8 * 4), y, duration, Phaser.Math.Easing.Linear);
-      selectedChar = null;
-    }
-    // Normal camera pan to selected tile
-    else {
-      cam.pan(x + (8 * 4), y, 500, Phaser.Math.Easing.Quadratic.InOut);
-    }
-  });
+  // emitter.on('moveChar', (oldX: number, oldY: number, newX: number, newY: number) => {
+  //   // Follow selected character to selected tile
+  //   //if (selectedChar !== null) {
+  //     let dist = Math.sqrt(Math.pow(newX - oldX, 2) + Math.pow(newY - oldY, 2))
+  //     let duration = dist * 2.5;
+  //     cam.pan(newX + (8 * 4), newY, duration, Phaser.Math.Easing.Linear);
+  //   //}
+  // })
 }
