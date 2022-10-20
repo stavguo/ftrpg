@@ -31,7 +31,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
 
     this.selected = false;
     this.currentTile = this.tiles[((y/64) * 30) + (x/64)]; // 30 = width of board in tiles
-    this.manhattan(this.tiles, this.currentTile, this.distance);
+    this.manStart(this.currentTile.row, this.currentTile.col, this.distance);
 
     // Double click listener
     let lastTime = 0;
@@ -131,49 +131,40 @@ export default class Character extends Phaser.GameObjects.Sprite {
       ease: Phaser.Math.Easing.Linear,
       y: newY
     });
-    this.miniMapItem.setPosition((11.5 * 16 * 4) + (newX/(5 * 2)), (0.5 * 16 * 4) + (newY/(5 * 2)));
-    this.manhattan(this.tiles, this.currentTile, this.distance);
+    if (window.innerHeight > window.innerWidth) {
+      this.miniMapItem.setPosition((3.5 * 16 * 4) + (newX/(5 * 2)), (0.5 * 16 * 4) + (newY/(5 * 2)));
+    } else {
+      this.miniMapItem.setPosition((11.5 * 16 * 4) + (newX/(5 * 2)), (0.5 * 16 * 4) + (newY/(5 * 2)));
+    }
+    this.manStart(this.currentTile.row, this.currentTile.col, this.distance);
   }
 
-  manhattan(
-    tiles: Tile[],
-    currentTile: Tile,
-    possibleDistance: number
-    ) {
+  manStart(row: number, col: number, dist: number) {
     this.possibleTiles = [];
-    for (let i = possibleDistance; i > 0; i--) {
-      for (let j = i; j <= possibleDistance; j++) {
-        let row = possibleDistance - j;
-        let col = i;
-        if (
-          currentTile.row - row >= 0 && currentTile.row - row < 20 &&
-          currentTile.col + col >= 0 && currentTile.col + col < 30
-          ) {
-          let tmp: Tile = tiles[((currentTile.row - row) * 30) + (currentTile.col + col)];
-          this.possibleTiles.push(tmp);
-        }
-        if (
-          currentTile.row + row + 1 >= 0 && currentTile.row + row + 1 < 20 &&
-          currentTile.col + col - 1 >= 0 && currentTile.col + col - 1 < 30
-          ) {
-          let tmp: Tile = tiles[((currentTile.row + row + 1) * 30) + (currentTile.col + col - 1)];
-          this.possibleTiles.push(tmp);
-        }
-        if (
-          currentTile.row + row >= 0 && currentTile.row + row < 20 &&
-          currentTile.col - col >= 0 && currentTile.col - col < 30
-          ) {
-          let tmp: Tile = tiles[((currentTile.row + row) * 30) + (currentTile.col - col)];
-          this.possibleTiles.push(tmp);
-        }
-        if (
-          currentTile.row - row - 1 >= 0 && currentTile.row - row - 1 < 20 &&
-          currentTile.col - col + 1 >= 0 && currentTile.col - col + 1 < 30
-          ) {
-          let tmp: Tile = tiles[((currentTile.row - row - 1) * 30) + (currentTile.col - col + 1)];
-          this.possibleTiles.push(tmp);
-        }
-      }
-    }
+    // Go NSEW
+    this.manhattan(row - 1, col, dist);
+    this.manhattan(row + 1, col, dist);
+    this.manhattan(row, col + 1, dist);
+    this.manhattan(row, col - 1, dist);
+    // Remove duplicates
+    const names = this.possibleTiles.map(o => o.name);
+    this.possibleTiles = this.possibleTiles.filter(({name}, index) => !names.includes(name, index + 1));
+  }
+
+  manhattan(row: number, col: number, dist: number) {
+    if (!this.satisfiesBounds(row, col)) return;
+    let tile = this.tiles[(row * 30) + col];
+    let cost = tile.cost;
+    if (cost === null) return;
+    if (dist - cost < 0) return;
+    this.possibleTiles.push(tile);
+    this.manhattan(row - 1, col, dist - cost);
+    this.manhattan(row + 1, col, dist - cost);
+    this.manhattan(row, col + 1, dist - cost);
+    this.manhattan(row, col - 1, dist - cost);
+  }
+
+  satisfiesBounds(row: number, col: number) {
+    return (row >= 0 && row < 20 && col >= 0 && col < 30) ? true : false;
   }
 }
