@@ -2,42 +2,34 @@ import 'phaser';
 import MainScene from './scenes/mainScene';
 import PreloadScene from './scenes/preloadScene';
 
-let DEFAULT_WIDTH;
-let DEFAULT_HEIGHT;
+let default_width: number;
+let default_height: number;
+let center_mode: number;
 //16x16 tiles, 15 by 10
 if (window.innerWidth > window.innerHeight) {
-  DEFAULT_WIDTH = 240 * 4;
-  DEFAULT_HEIGHT = 160 * 4;
+  default_width = 240 * 4;
+  default_height = 160 * 4;
+  center_mode = Phaser.Scale.CENTER_BOTH;
 } else {
-  DEFAULT_WIDTH = 160 * 4;
-  DEFAULT_HEIGHT = 240 * 4;
+  default_width = 160 * 4;
+  default_height = 240 * 4;
+  center_mode = Phaser.Scale.CENTER_HORIZONTALLY;
 }
 
 const config = {
   type: Phaser.AUTO,
-  //backgroundColor: '#ffffff',
-  //backgroundColor: '#222034',
   backgroundColor: '#000',
-  //antialias: true,
-  //roundPixels: true,
   pixelArt: true,
   scale: {
     parent: 'phaser-game',
     mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: DEFAULT_WIDTH,
-    height: DEFAULT_HEIGHT
+    autoCenter: center_mode,
+    width: default_width,
+    height: default_height
   },
   dom: {
     createContainer: true
   },
-//   plugins: {
-//     global: [{
-//         key: 'rexHorrifiPipeline',
-//         plugin: HorrifiPipelinePlugin,
-//         start: true
-//     }]
-//   },
   scene: [PreloadScene, MainScene]
 };
 
