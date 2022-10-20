@@ -11,6 +11,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
   currentTile: Tile;
   distance: number;
   color: number;
+  tileTint: number;
 
   constructor(
     scene: any,
@@ -47,8 +48,11 @@ export default class Character extends Phaser.GameObjects.Sprite {
     // Make MiniMap Item
     if (this.texture.key === 'goodChar') {
       this.color = 0x5151bf;
+      //this.tileTint = 0x7DD0D7;
+      this.tileTint = 0x7D99D7;
     } else if (this.texture.key === 'badChar') {
       this.color = 0xea3e3e;
+      this.tileTint = 0xd77d7d;
     }
     let miniMapWidth = 11.5;
     if (window.innerWidth < window.innerHeight) {
@@ -72,9 +76,28 @@ export default class Character extends Phaser.GameObjects.Sprite {
         }
       } else {
         if (this.selected) {
-          this.deselect();
+          //this.deselect();
+          this.selected = false; // JA
+          this.stopSelectTween(); // JA
           if (obj instanceof Tile && this.possibleTiles.includes(this.tiles[((obj.y/64) * 30) + (obj.x/64)])) {
             //this.emitter.emit('moveChar', this.currentTile.x, this.currentTile.y, x, y);
+            this.possibleTiles.forEach((el) => { // JA
+              if (this.texture.key === 'goodChar') {
+                if (el.tintBottomRight === 0xd77d7d) {
+                  el.clearTint();
+                  el.setTint(0xffffff,0xffffff,0xffffff,0xd77d7d)
+                } else {
+                  el.clearTint();
+                }
+              } else if (this.texture.key === 'badChar') {
+                if (el.tintTopLeft === 0x7D99D7) {
+                  el.clearTint();
+                  el.setTint(0x7D99D7,0xffffff,0xffffff,0xffffff)
+                } else {
+                  el.clearTint();
+                }
+              }
+            });
             this.move(obj.x, obj.y);
           }
         }
@@ -84,14 +107,45 @@ export default class Character extends Phaser.GameObjects.Sprite {
 
   select() {
     this.selected = true;
-    if (this.texture.key === 'goodChar') this.possibleTiles.forEach((el) => el.setTint(0x7DD0D7,0xffffff,0xffffff,0xffffff));
-    if (this.texture.key === 'badChar') this.possibleTiles.forEach((el) => el.setTint(0xd77d7d,0xffffff,0xffffff,0xffffff));
+    if (this.texture.key === 'goodChar') {
+      this.possibleTiles.forEach((el) => {
+        if (el.tintBottomRight === 0xd77d7d) {
+          el.setTint(this.tileTint,0xffffff,0xffffff,0xd77d7d)
+        } else {
+          el.setTint(this.tileTint,0xffffff,0xffffff,0xffffff)
+        }
+      });
+    } else if (this.texture.key === 'badChar') {
+      this.possibleTiles.forEach((el) => {
+        if (el.tintTopLeft === 0x7D99D7) {
+          el.setTint(0x7D99D7,0xffffff,0xffffff,this.tileTint)
+        } else {
+          el.setTint(0xffffff,0xffffff,0xffffff, this.tileTint)
+        }
+      });
+    }
     this.startSelectTween();
   }
 
   deselect() {
     this.selected = false;
-    this.possibleTiles.forEach((el) => el.clearTint());
+    this.possibleTiles.forEach((el) => {
+      if (this.texture.key === 'goodChar') {
+        if (el.tintBottomRight === 0xd77d7d) {
+          el.clearTint();
+          el.setTint(0xffffff,0xffffff,0xffffff,0xd77d7d)
+        } else {
+          el.clearTint();
+        }
+      } else if (this.texture.key === 'badChar') {
+        if (el.tintTopLeft === 0x7D99D7) {
+          el.clearTint();
+          el.setTint(0x7D99D7,0xffffff,0xffffff,0xffffff)
+        } else {
+          el.clearTint();
+        }
+      }
+    });
     this.stopSelectTween();
   }
 
@@ -157,7 +211,8 @@ export default class Character extends Phaser.GameObjects.Sprite {
     let cost = tile.cost;
     if (cost === null) return;
     if (dist - cost < 0) return;
-    this.possibleTiles.push(tile);
+    // TODO: First check if tile is possible tiles
+    if (tile !== this.currentTile) this.possibleTiles.push(tile);
     this.manhattan(row - 1, col, dist - cost);
     this.manhattan(row + 1, col, dist - cost);
     this.manhattan(row, col + 1, dist - cost);
