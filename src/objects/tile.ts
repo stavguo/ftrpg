@@ -22,11 +22,7 @@ export default class Tile extends Phaser.GameObjects.Image {
     this.noise = data['noise'];
 
     if (frame === 0) {
-      //this.setAlpha(0);
-      this.setVisible(false);
-      //this.setTexture('ocean');
-      //this.add.shader('ocean', 0, 0, 960, 640).setOrigin(0);
-      //this.scene.add.shader('ocean', this.row * 16 * 4, this.col * 16 * 4, 16 * 4, 16 * 4).setOrigin(0);
+      //this.setVisible(false);
     }
 
     let lastTime = 0;

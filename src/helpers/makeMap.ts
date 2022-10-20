@@ -3,7 +3,7 @@ import { createNoise2D } from 'simplex-noise';
 
 export function makeMap(
   scene: Phaser.Scene,
-  tiles: Phaser.GameObjects.Group,
+  tiles: Tile[],
   emitter: Phaser.Events.EventEmitter,
   widthInTiles: number,
   heightInTiles: number
@@ -15,7 +15,7 @@ export function makeMap(
       let frame: number;
       if (noise < -0.6) {
         frame = 0;
-      } else if (noise < -0.2) {
+      } else if (noise < -0.3) {
         frame = 1
       } else if (noise < 0.4) {
         frame = 2
@@ -31,10 +31,11 @@ export function makeMap(
         noise: noise
       });
       scene.add.existing(tile);
-      tiles.add(tile);
+
+      tiles.push(tile);
     }
   }
-  Phaser.Actions.GridAlign(tiles.getChildren(), {
+  Phaser.Actions.GridAlign(tiles, {
     width: widthInTiles,
     height: heightInTiles,
     cellWidth: 16 * 4,
