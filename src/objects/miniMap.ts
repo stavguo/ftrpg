@@ -27,6 +27,12 @@ export default class MiniMap extends Phaser.GameObjects.Rectangle {
     this.scene.add.existing(smallRect);
     this.items.add(smallRect);
 
+    if (window.innerWidth < window.innerHeight) {
+      this.setPosition(3.5 * 16 * 4, 0.5 * 16 * 4);
+      smallRect.setPosition(3.5 * 16 * 4, 0.5 * 16 * 4);
+      smallRect.setScale(2/3, 3/2);
+    }
+
     this.items.setAlpha(0);
     this.emitter.on('pointerup', () => {
       this.items.setAlpha(0);
