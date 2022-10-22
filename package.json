@@ -7,6 +7,7 @@
         "dev": "rollup --config rollup.config.dev.js",
         "build": "rollup --config rollup.config.dist.js",
         "watch": "rollup --watch --config rollup.config.dev.js",
+        "deploy": "touch dist/.nojekyll && gh-pages -t -d dist -m \"Build for $(git log -n1 --pretty=format:\"%h %s\") [skip ci]\"",
         "test": "jest"
     },
     "repository": {
