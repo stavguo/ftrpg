@@ -1,5 +1,5 @@
-import commonjs from 'rollup-plugin-commonjs';
-import resolve from 'rollup-plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import { terser } from 'rollup-plugin-terser';
 import typescript from 'rollup-plugin-typescript2';
@@ -27,12 +27,15 @@ export default {
 
         //  Toggle the booleans here to enable / disable Phaser 3 features:
         replace({
-            'typeof CANVAS_RENDERER': JSON.stringify(true),
-            'typeof WEBGL_RENDERER': JSON.stringify(true),
-            'typeof EXPERIMENTAL': JSON.stringify(true),
-            'typeof PLUGIN_CAMERA3D': JSON.stringify(false),
-            'typeof PLUGIN_FBINSTANT': JSON.stringify(false),
-            'typeof FEATURE_SOUND': JSON.stringify(true)
+            preventAssignment: true,
+            values: {
+                'typeof CANVAS_RENDERER': JSON.stringify(true),
+                'typeof WEBGL_RENDERER': JSON.stringify(true),
+                'typeof EXPERIMENTAL': JSON.stringify(true),
+                'typeof PLUGIN_CAMERA3D': JSON.stringify(false),
+                'typeof PLUGIN_FBINSTANT': JSON.stringify(false),
+                'typeof FEATURE_SOUND': JSON.stringify(true)
+            }
         }),
 
         //  Parse our .ts source files
@@ -56,10 +59,8 @@ export default {
         //  See https://www.npmjs.com/package/rollup-plugin-typescript2 for config options
         typescript(),
 
-        //  See https://github.com/photonstorm/phaser3-typescript-project-template/issues/7#issue-593857675
-        terser({
-            mangle: false
-        })
+        //  See https://www.npmjs.com/package/rollup-plugin-terser for config options
+        terser()
 
     ]
 };

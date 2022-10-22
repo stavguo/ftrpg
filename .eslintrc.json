@@ -1,0 +1,59 @@
+{
+    "env": {
+        "browser": true,
+        "jest": true,
+        "es6": true
+    },
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "extends": [
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "rules": {
+        "comma-dangle": [ "error", "never" ],
+        "indent": [ "error", 4, { "SwitchCase": 1 } ],
+        "linebreak-style": [ "error", "unix" ],
+        "no-console": "off",
+        "no-trailing-spaces": "error",
+        "no-undef": "error",
+        "quotes": [ "error", "single" ],
+        "semi": [ "error", "never" ]
+    },
+    "overrides": [
+        {
+            "files": ["rollup.config.dev.js", "rollup.config.dist.js"],
+            "env": {
+                "browser": false,
+                "node": true
+            },
+            "parser": "espree",
+            "plugins": [],
+            "extends": [
+                "eslint:recommended"
+            ],
+            "rules": {
+                "global-require": [ "off" ],
+                "@typescript-eslint/no-var-requires": [ "off" ]
+            }
+        },
+        {
+            "files": ["jest.config.js"],
+            "env": {
+                "browser": false,
+                "node": true
+            },
+            "parser": "espree",
+            "plugins": [],
+            "extends": [
+                "eslint:recommended"
+            ],
+            "rules": {
+                "global-require": [ "off" ],
+                "no-undef": [ "off" ]
+            }
+        }
+    ]
+}

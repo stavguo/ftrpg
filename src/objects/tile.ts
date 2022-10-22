@@ -11,7 +11,12 @@ export default class Tile extends Phaser.GameObjects.Image {
     y: number,
     texture: string,
     frame: number,
-    data: object,
+    data: {
+      row: number,
+      col: number,
+      emitter: Phaser.Events.EventEmitter,
+      noise: number
+    },
   ) {
     super(scene, x, y, texture, frame)
     this.setInteractive();

@@ -1,5 +1,5 @@
-import commonjs from 'rollup-plugin-commonjs';
-import resolve from 'rollup-plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import serve from 'rollup-plugin-serve';
 import typescript from 'rollup-plugin-typescript2';
@@ -19,7 +19,7 @@ export default {
         file: './dist/game.js',
         name: 'MyGame',
         format: 'iife',
-        sourcemap: true,
+        sourcemap: false,
         intro: 'var global = window;'
     },
 
@@ -27,12 +27,15 @@ export default {
 
         //  Toggle the booleans here to enable / disable Phaser 3 features:
         replace({
-            'typeof CANVAS_RENDERER': JSON.stringify(true),
-            'typeof WEBGL_RENDERER': JSON.stringify(true),
-            'typeof EXPERIMENTAL': JSON.stringify(true),
-            'typeof PLUGIN_CAMERA3D': JSON.stringify(false),
-            'typeof PLUGIN_FBINSTANT': JSON.stringify(false),
-            'typeof FEATURE_SOUND': JSON.stringify(true)
+            preventAssignment: true,
+            values: {
+                'typeof CANVAS_RENDERER': JSON.stringify(true),
+                'typeof WEBGL_RENDERER': JSON.stringify(true),
+                'typeof EXPERIMENTAL': JSON.stringify(true),
+                'typeof PLUGIN_CAMERA3D': JSON.stringify(false),
+                'typeof PLUGIN_FBINSTANT': JSON.stringify(false),
+                'typeof FEATURE_SOUND': JSON.stringify(true)
+            }
         }),
 
         //  Parse our .ts source files
@@ -54,7 +57,10 @@ export default {
         }),
 
         //  See https://www.npmjs.com/package/rollup-plugin-typescript2 for config options
-        typescript(),
+        typescript({
+            tsconfig: 'tsconfig.json',
+            sourceMap: true
+        }),
 
         //  See https://www.npmjs.com/package/rollup-plugin-serve for config options
         serve({

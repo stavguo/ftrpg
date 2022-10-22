@@ -8,7 +8,10 @@ export default class MiniMap extends Phaser.GameObjects.Rectangle {
     y: number,
     width: number,
     height: number,
-    data: object
+    data: {
+      items: Phaser.GameObjects.Group,
+      emitter: Phaser.Events.EventEmitter
+    }
   ) {
     super(scene, x, y, width, height);
     this.setStrokeStyle(4, 0xffffff, 0.8);

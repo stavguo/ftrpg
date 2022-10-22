@@ -1,3 +1,4 @@
+import { Phase } from "../scenes/mainScene";
 import Tile from "./tile";
 
 export default class Character extends Phaser.GameObjects.Sprite {
@@ -12,6 +13,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
   distance: number;
   color: number;
   tileTint: number;
+  phase: Phase;
 
   constructor(
     scene: any,
@@ -19,7 +21,13 @@ export default class Character extends Phaser.GameObjects.Sprite {
     y: number,
     texture: string,
     frame: number,
-    data: object,
+    data: {
+      emitter: Phaser.Events.EventEmitter,
+      items: Phaser.GameObjects.Group,
+      tiles: Tile[],
+      distance: number,
+      phase: Phase
+    },
   ) {
     super(scene, x, y, texture, frame);
     this.setInteractive();
@@ -29,6 +37,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.items = data['items'];
     this.tiles = data['tiles'];
     this.distance = data['distance'];
+    this.phase = data['phase'];
 
     this.selected = false;
     this.currentTile = this.tiles[((y/64) * 30) + (x/64)]; // 30 = width of board in tiles
@@ -76,28 +85,8 @@ export default class Character extends Phaser.GameObjects.Sprite {
         }
       } else {
         if (this.selected) {
-          //this.deselect();
-          this.selected = false; // JA
-          this.stopSelectTween(); // JA
+          this.deselect();
           if (obj instanceof Tile && this.possibleTiles.includes(this.tiles[((obj.y/64) * 30) + (obj.x/64)])) {
-            //this.emitter.emit('moveChar', this.currentTile.x, this.currentTile.y, x, y);
-            this.possibleTiles.forEach((el) => { // JA
-              if (this.texture.key === 'goodChar') {
-                if (el.tintBottomRight === 0xd77d7d) {
-                  el.clearTint();
-                  el.setTint(0xffffff,0xffffff,0xffffff,0xd77d7d)
-                } else {
-                  el.clearTint();
-                }
-              } else if (this.texture.key === 'badChar') {
-                if (el.tintTopLeft === 0x7D99D7) {
-                  el.clearTint();
-                  el.setTint(0x7D99D7,0xffffff,0xffffff,0xffffff)
-                } else {
-                  el.clearTint();
-                }
-              }
-            });
             this.move(obj.x, obj.y);
           }
         }
@@ -183,7 +172,8 @@ export default class Character extends Phaser.GameObjects.Sprite {
       targets: this,
       duration: duration,
       ease: Phaser.Math.Easing.Linear,
-      y: newY
+      y: newY,
+      onComplete: () => this.emitter.emit('turnDone', this)
     });
     if (window.innerHeight > window.innerWidth) {
       this.miniMapItem.setPosition((3.5 * 16 * 4) + (newX/(5 * 2)), (0.5 * 16 * 4) + (newY/(5 * 2)));
