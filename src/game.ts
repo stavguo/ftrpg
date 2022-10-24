@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser'
 import MainScene from './scenes/mainScene'
+import NewScene from './scenes/newScene'
 import PreloadScene from './scenes/preloadScene'
 
 let default_width: number
@@ -30,7 +31,11 @@ const config = {
     dom: {
         createContainer: true
     },
-    scene: [PreloadScene, MainScene]
+    scene: [
+        PreloadScene,
+        //MainScene,
+        NewScene
+    ]
 }
 
 new Phaser.Game(config)
