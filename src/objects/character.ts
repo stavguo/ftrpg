@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser'
-import { Phase } from '../scenes/mainScene'
+import { StagePhase } from '../scenes/mainScene'
 import Tile from './tile'
 
 export default class Character extends Phaser.GameObjects.Sprite {
@@ -14,7 +14,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
     distance: number
     color: number
     tileTint: number
-    phase: Phase
+    phase: StagePhase
 
     constructor(
         scene: Phaser.Scene,
@@ -27,7 +27,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
       items: Phaser.GameObjects.Group,
       tiles: Tile[],
       distance: number,
-      phase: Phase
+      phase: StagePhase
     },
     ) {
         super(scene, x, y, texture, frame)

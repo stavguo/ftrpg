@@ -33,7 +33,7 @@ const config = {
     },
     scene: [
         PreloadScene,
-        //MainScene,
+        //MainScene
         NewScene
     ]
 }

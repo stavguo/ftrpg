@@ -5,16 +5,24 @@ import Character from '../objects/character'
 import MiniMap from '../objects/miniMap'
 import Tile from '../objects/tile'
 
-export enum Phase {
+export enum StagePhase {
   Player = 'PLAYER',
   Enemy = 'ENEMY'
 }
+
+export enum CharacterPhase {
+    Available = 'AVAILABLE',
+    Selected = 'SELECTED',
+    Unavailable = 'UNAVAILABLE'
+}
+
+
 
 export default class MainScene extends Phaser.Scene {
     emitter: Phaser.Events.EventEmitter
     tiles: Phaser.GameObjects.Group
     miniMapItems: Phaser.GameObjects.Group
-    phase: Phase
+    phase: StagePhase
     playerChars: Character[] = []
     enemyChars: Character[] = []
 
@@ -23,7 +31,7 @@ export default class MainScene extends Phaser.Scene {
     }
 
     async create() {
-        this.phase = Phase.Player
+        this.phase = StagePhase.Player
 
         //this.add.shader('ocean', 0, 0, 960 * 2, 640 * 2).setOrigin(0);
         this.emitter = new Phaser.Events.EventEmitter()
