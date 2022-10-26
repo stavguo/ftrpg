@@ -21,10 +21,9 @@ import { AvailableTiles } from '../components/actor/availableTiles'
 import { Terrain } from '../components/tile/terrain'
 import { createAvailableTileSystem } from '../systems/availableTileSystem'
 import { Occupied, OccupiedEnum } from '../components/tile/occupied'
-import { Actor, ActorStateEnum } from '../components/actor/actor'
+import { Actor, ActorStateEnum, ActorTypeEnum } from '../components/actor/actor'
 import { Phase } from '../components/state/phase'
 import { Selected } from '../components/state/selected'
-import { createSelectedSystem } from '../systems/selectedSystem'
 
 export default class NewScene extends Phaser.Scene {
     private world?: IWorld
@@ -32,7 +31,6 @@ export default class NewScene extends Phaser.Scene {
     private cameraSystem?: System
     private doubleClickSystem?: System
     private availableTileSystem?: System
-    private selectedSystem?: System
     spriteById: Map<number, Phaser.GameObjects.Sprite>
 
     constructor() {
@@ -47,6 +45,7 @@ export default class NewScene extends Phaser.Scene {
         const enemy = addEntity(this.world)
         addComponent(this.world, Actor, enemy)
         Actor.state[enemy] = ActorStateEnum.Available
+        Actor.type[enemy] = ActorTypeEnum.Enemy
         addComponent(this.world, Enemy, enemy)
         addComponent(this.world, Cell, enemy)
         Cell.row[enemy] = 6
@@ -64,6 +63,7 @@ export default class NewScene extends Phaser.Scene {
         const player = addEntity(this.world)
         addComponent(this.world, Actor, player)
         Actor.state[player] = ActorStateEnum.Available
+        Actor.type[player] = ActorTypeEnum.Player
         addComponent(this.world, Player, player)
         addComponent(this.world, Cell, player)
         Cell.row[player] = 3
@@ -145,8 +145,6 @@ export default class NewScene extends Phaser.Scene {
 
         // Initialize double click detection system
         this.doubleClickSystem = createDoubleClickSystem(this, this.spriteById)
-
-        this.selectedSystem = createSelectedSystem(this.spriteById)
     }
 
     update(
@@ -160,6 +158,5 @@ export default class NewScene extends Phaser.Scene {
         this.spriteSystem?.(this.world)
         this.availableTileSystem?.(this.world)
         this.doubleClickSystem?.(this.world)
-        this.selectedSystem?.(this.world)
     }
 }

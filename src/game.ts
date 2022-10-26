@@ -18,7 +18,8 @@ if (window.innerWidth > window.innerHeight) {
 }
 
 const config = {
-    type: Phaser.AUTO,
+    //type: Phaser.AUTO,
+    type: Phaser.WEBGL,
     backgroundColor: '#000',
     pixelArt: true,
     scale: {
