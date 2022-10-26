@@ -1,9 +1,9 @@
 import { defineQuery, IWorld } from 'bitecs'
-import { AvailableTiles } from '../components/availableTiles'
-import { Cell } from '../components/cell'
-import { Distance } from '../components/distance'
-import { Terrain } from '../components/terrain'
-import { Tile } from '../components/tile'
+import { AvailableTiles } from '../components/actor/availableTiles'
+import { Cell } from '../components/base/cell'
+import { Distance } from '../components/actor/distance'
+import { Terrain } from '../components/tile/terrain'
+import { Tile } from '../components/tile/tile'
 
 const tileQuery = defineQuery([Tile])
 

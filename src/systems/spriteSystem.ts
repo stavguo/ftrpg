@@ -4,11 +4,11 @@ import {
     defineSystem,
     enterQuery
 } from 'bitecs'
-import { Cell } from '../components/cell'
-import { Sprite } from '../components/sprite'
-import { Frame } from '../components/frame'
-import { Actor } from '../components/actor'
-import { Tile } from '../components/tile'
+import { Cell } from '../components/base/cell'
+import { Sprite } from '../components/base/sprite'
+import { Frame } from '../components/base/frame'
+import { Actor } from '../components/actor/actor'
+import { Tile } from '../components/tile/tile'
 
 export const createSpriteSystem = (scene: Phaser.Scene, textures: string[], spriteById: Map<number, Phaser.GameObjects.Sprite>) => {
     const actorQuery = defineQuery([Actor])

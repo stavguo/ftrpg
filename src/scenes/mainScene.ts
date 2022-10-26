@@ -68,21 +68,5 @@ export default class MainScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-R', () => {
             this.scene.restart()
         }) //
-
-    // let playerMoves: number = 0;
-    // let enemyMoves: number = 0;
-    // this.emitter.on('turnDone', (char: Character) => {
-    //   if (this.playerChars.includes(char)) ++playerMoves;
-    //   if (this.enemyChars.includes(char)) ++enemyMoves;
-    //   if (playerMoves === this.playerChars.length) {
-    //     this.phase = Phase.Enemy;
-    //     playerMoves = 0;
-    //   }
-    //   if (enemyMoves === this.enemyChars.length) {
-    //     this.phase = Phase.Player;
-    //     enemyMoves = 0;
-    //   }
-    //   console.log(this.phase);
-    // });
     }
 }

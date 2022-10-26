@@ -3,7 +3,7 @@ import {
     defineSystem,
     enterQuery
 } from 'bitecs'
-import { Actor } from '../components/actor'
+import { Actor } from '../components/actor/actor'
 import { manStart } from '../helpers/manhattan'
 
 const actorQuery = defineQuery([Actor])
