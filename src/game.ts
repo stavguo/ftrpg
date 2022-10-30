@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser'
-import MainScene from './scenes/mainScene'
-import NewScene from './scenes/newScene'
-import PreloadScene from './scenes/preloadScene'
+import MainScene from './PubSub/scenes/mainScene'
+import EcsScene from './ECS/scenes/EcsScene'
+import PreloadScene from './preloadScene'
 
 let default_width: number
 let default_height: number
@@ -35,7 +35,7 @@ const config = {
     scene: [
         PreloadScene,
         //MainScene
-        NewScene
+        EcsScene
     ]
 }
 

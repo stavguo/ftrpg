@@ -48,25 +48,6 @@ export const createSpriteSystem = (scene: Phaser.Scene, textures: string[], spri
                     .setInteractive()
             )
         }
-        const entities = actorQuery(world)
-        for (let i = 0; i < entities.length; ++i) {
-            const id = entities[i]
-            const sprite = spriteById.get(id)
-            if (!sprite)
-            {
-                continue
-            }
-            sprite.x = Cell.col[id] * 64
-            sprite.y = Cell.row[id] * 64
-        }
-        // const exitEntities = spriteQueryExit(world)
-        // for (let i = 0; i < exitEntities.length; ++i) {
-        //     const id = exitEntities[i]
-        //     const sprite = spriteById.get(id)
-        //     if (!sprite) continue
-        //     sprite.destroy()
-        //     spriteById.delete(id)
-        // }
         return world
     })
 }

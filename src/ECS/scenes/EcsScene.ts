@@ -17,29 +17,37 @@ import { Player } from '../components/actor/player'
 import { Enemy } from '../components/actor/enemy'
 import { Tile } from '../components/tile/tile'
 import { Distance } from '../components/actor/distance'
-import { AvailableTiles } from '../components/actor/availableTiles'
 import { Terrain } from '../components/tile/terrain'
 import { createAvailableTileSystem } from '../systems/availableTileSystem'
 import { Occupied, OccupiedEnum } from '../components/tile/occupied'
 import { Actor, ActorStateEnum, ActorTypeEnum } from '../components/actor/actor'
 import { Phase } from '../components/state/phase'
 import { Selected } from '../components/state/selected'
+import { Path } from '../types/Path'
+import { CurrentTile } from '../components/actor/currentTile'
+import { createTintSystem } from '../systems/tintSystem'
+import { createMovementSystem } from '../systems/movementSystem'
 
-export default class NewScene extends Phaser.Scene {
+
+export default class EcsScene extends Phaser.Scene {
     private world?: IWorld
     private spriteSystem?: System
     private cameraSystem?: System
     private doubleClickSystem?: System
     private availableTileSystem?: System
+    private tintSystem?: System
+    private movementSystem?: System
     spriteById: Map<number, Phaser.GameObjects.Sprite>
+    availableTiles: Map<number, Map<number, Path>>
 
     constructor() {
-        super({ key: 'MainScene' })
+        super({ key: 'EcsScene' })
     }
 
     create() {
         this.world = createWorld()
         this.spriteById = new Map<number, Phaser.GameObjects.Sprite>()
+        this.availableTiles = new Map<number, Map<number, Path>>()
 
         // Initialize enemy
         const enemy = addEntity(this.world)
@@ -56,8 +64,7 @@ export default class NewScene extends Phaser.Scene {
         Frame.frame[enemy] = 0
         addComponent(this.world, Distance, enemy)
         Distance.dist[enemy] = 4
-        addComponent(this.world, AvailableTiles, enemy)
-        AvailableTiles.tiles[enemy].set([])
+        addComponent(this.world, CurrentTile, enemy)
 
         // Initialize player
         const player = addEntity(this.world)
@@ -74,8 +81,7 @@ export default class NewScene extends Phaser.Scene {
         Frame.frame[player] = 0
         addComponent(this.world, Distance, player)
         Distance.dist[player] = 4
-        addComponent(this.world, AvailableTiles, player)
-        AvailableTiles.tiles[player].set([])
+        addComponent(this.world, CurrentTile, enemy)
 
         // Initialize map
         const noise2D = createNoise2D()
@@ -141,10 +147,14 @@ export default class NewScene extends Phaser.Scene {
         this.cameraSystem = createCameraSystem(this)
 
         // Initialize available tile system
-        this.availableTileSystem = createAvailableTileSystem()
+        this.availableTileSystem = createAvailableTileSystem(this.availableTiles)
 
         // Initialize double click detection system
-        this.doubleClickSystem = createDoubleClickSystem(this, this.spriteById)
+        this.doubleClickSystem = createDoubleClickSystem(this, this.spriteById, this.availableTiles)
+
+        this.tintSystem = createTintSystem(this.spriteById)
+
+        this.movementSystem = createMovementSystem(this.spriteById)
     }
 
     update(
@@ -158,5 +168,7 @@ export default class NewScene extends Phaser.Scene {
         this.spriteSystem?.(this.world)
         this.availableTileSystem?.(this.world)
         this.doubleClickSystem?.(this.world)
+        this.tintSystem?.(this.world)
+        this.movementSystem?.(this.world)
     }
 }
