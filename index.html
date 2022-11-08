@@ -21,11 +21,34 @@
     <link rel="shortcut icon" href="assets/img/favicon.ico" type="image/x-icon" /> -->
     <title>ftrpg</title>
     <style>
-      html,
       body {
-        height: 100%;
-        margin: 0;
-        /* background-color: #FFE1AF; */
+        background-color: #000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100vw;
+        height: 100vh;
+        margin: 0 0;
+        position: relative;
+      }
+
+      canvas {
+        background: #000;
+        margin-top: 30px;
+      }
+
+      .build {
+        color: #444;
+        font-size: 12px;
+        font-family: Menlo;
+        text-align: left;
+        width: 100%;
+        position: absolute;
+        bottom: 0;
+      }
+
+      .hide {
+        display: none;
       }
       /* @font-face {
         font-family: Alagard;
@@ -36,6 +59,8 @@
     <noscript>Please enable javascript to continue using this application.</noscript>
   </head>
   <body>
+    <img id="loading" src="assets/loading.gif" class="hide">
     <script src="game.js"></script>
   </body>
 </html>
+
