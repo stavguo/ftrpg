@@ -1,42 +1,35 @@
-import * as Phaser from 'phaser'
-import MainScene from './PubSub/scenes/mainScene'
-import EcsScene from './ECS/scenes/EcsScene'
-import PreloadScene from './preloadScene'
+import {
+    addComponent,
+    addEntity,
+    createWorld,
+    pipe
+} from 'bitecs' // shift-alt-O to optimize imports
+import { GameManager } from './components/GameManager'
+import { DISPLAY } from './display'
+import { makeCamera } from './entities/makeCamera'
+import { makeMap } from './entities/makeMap'
+import { inputSystem } from './systems/inputSystem'
+import { movementSystem } from './systems/movementSystem'
+import { renderSystem } from './systems/renderSystem'
 
-let default_width: number
-let default_height: number
-let center_mode: number
-//16x16 tiles, 15 by 10
-if (window.innerWidth > window.innerHeight) {
-    default_width = 240 * 4
-    default_height = 160 * 4
-    center_mode = Phaser.Scale.CENTER_BOTH
-} else {
-    default_width = 160 * 4
-    default_height = 240 * 4
-    center_mode = Phaser.Scale.CENTER_HORIZONTALLY
-}
+//Create display
+document.body.appendChild(DISPLAY.getContainer())
 
-const config = {
-    //type: Phaser.AUTO,
-    type: Phaser.WEBGL,
-    backgroundColor: '#000',
-    pixelArt: true,
-    scale: {
-        parent: 'phaser-game',
-        mode: Phaser.Scale.FIT,
-        autoCenter: center_mode,
-        width: default_width,
-        height: default_height
-    },
-    dom: {
-        createContainer: true
-    },
-    scene: [
-        PreloadScene,
-        //MainScene
-        EcsScene
-    ]
-}
+const pipeline = pipe(
+    inputSystem,
+    movementSystem,
+    renderSystem
+)
 
-new Phaser.Game(config)
+const world = createWorld()
+
+// Add entities here
+const gameManager = addEntity(world)
+addComponent(world, GameManager, gameManager)
+
+makeCamera(world)
+makeMap(world)
+
+setInterval(() => {
+    pipeline(world)
+}, 16)
