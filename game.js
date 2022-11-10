@@ -334,6 +334,11 @@
     for (let i = 0; i < world[$entityMasks].length; i++)
       world[$entityMasks][i][eid] = 0;
   };
+
+  // src/Query.js
+  function Not(c) {
+    return () => [c, "not"];
+  }
   var $queries = Symbol("queries");
   var $notQueries = Symbol("notQueries");
   var $queryAny = Symbol("queryAny");
@@ -608,6 +613,29 @@
     if (reset)
       resetStoreFor(component, eid);
   };
+  var removeComponent = (world, component, eid, reset = true) => {
+    if (eid === void 0)
+      throw new Error("bitECS - entity is undefined.");
+    if (!world[$entitySparseSet].has(eid))
+      throw new Error("bitECS - entity does not exist in the world.");
+    if (!hasComponent(world, component, eid))
+      return;
+    const c = world[$componentMap].get(component);
+    const { generationId, bitflag, queries } = c;
+    world[$entityMasks][generationId][eid] &= ~bitflag;
+    queries.forEach((q) => {
+      if (q.toRemove.has(eid))
+        q.toRemove.remove(eid);
+      const match = queryCheckEntity(world, q, eid);
+      if (match)
+        queryAddEntity(q, eid);
+      if (!match)
+        queryRemoveEntity(world, q, eid);
+    });
+    world[$entityComponents].get(eid).delete(component);
+    if (reset)
+      resetStoreFor(component, eid);
+  };
 
   // src/World.js
   var $size = Symbol("size");
@@ -664,8 +692,6 @@
     return tmp;
   };
   var Types = TYPES_ENUM;
-
-  const GameManager = defineComponent();
 
   /**
    * This code is an implementation of Alea algorithm; (C) 2010 Johannes Baagøe.
@@ -2580,17 +2606,19 @@ void main() {
 
   const DISPLAY_WIDTH = 30;
   const DISPLAY_HEIGHT = 20;
-  const DISPLAY_FONT_SIZE = 30;
-  const WORLD_WIDTH = 60;
-  const WORLD_HEIGHT = 40;
+  const DISPLAY_FONT_SIZE = 15;
+  const SCREEN_WIDTH = 60;
+  const SCREEN_HEIGHT = 40;
+  const WORLD_WIDTH = 120;
+  const WORLD_HEIGHT = 80;
   const WATER_LIMIT = -0.5;
   const PLAIN_LIMIT = 0.5;
   const FOREST_LIMIT = 0.8;
   const THICKET_LIMIT = 1;
 
   const DISPLAY = new Display({
-      width: DISPLAY_WIDTH,
-      height: DISPLAY_HEIGHT,
+      width: SCREEN_WIDTH,
+      height: SCREEN_HEIGHT,
       fontSize: DISPLAY_FONT_SIZE,
       forceSquareRatio: true
   });
@@ -2608,6 +2636,19 @@ void main() {
       addComponent(world, Position, eid);
       Position.x[eid] = Math.floor((WORLD_WIDTH / 2) - (DISPLAY_WIDTH / 2));
       Position.y[eid] = Math.floor((WORLD_HEIGHT / 2) - (DISPLAY_HEIGHT / 2));
+  };
+
+  const GameManager = defineComponent({
+      selectX: Types.i16,
+      selectY: Types.i16
+  });
+
+  const makeGameManager = (world) => {
+      const gameManager = addEntity(world);
+      addComponent(world, GameManager, gameManager);
+      GameManager.selectX[gameManager] = -1;
+      GameManager.selectY[gameManager] = -1;
+      return gameManager;
   };
 
   const Noise = defineComponent({
@@ -2649,6 +2690,13 @@ void main() {
       }
   };
 
+  const makeMouseListener = (gmId) => {
+      window.addEventListener('mouseup', (e) => {
+          GameManager.selectX[gmId] = DISPLAY.eventToPosition(e)[0];
+          GameManager.selectY[gmId] = DISPLAY.eventToPosition(e)[1];
+      });
+  };
+
   const cameraQuery = defineQuery([Camera]);
 
   const gameManagerQuery = defineQuery([GameManager]);
@@ -2688,48 +2736,261 @@ void main() {
       return world;
   };
 
-  const positionQuery = defineQuery([Position]);
+  // -------------------------------
+  // TYPES / INTERFACES
+  // -------------------------------
+  // -------------------------------
+  // CONSTANTS
+  // -------------------------------
+  const DEFAULT_THRESHOLD = Math.sqrt(1.05 * 0.05) - 0.05;
+  const RE_HEX = /^(?:[0-9a-f]{3}){1,2}$/i;
+  const DEFAULT_BW = {
+      black: '#000000',
+      white: '#ffffff',
+      threshold: DEFAULT_THRESHOLD
+  };
+  // -------------------------------
+  // HELPER METHODS
+  // -------------------------------
+  function padz(str, len = 2) {
+      return (new Array(len).join('0') + str).slice(-len);
+  }
+  function hexToRgbArray(hex) {
+      if (hex.slice(0, 1) === '#')
+          hex = hex.slice(1);
+      if (!RE_HEX.test(hex))
+          throw new Error(`Invalid HEX color: "${hex}"`);
+      // normalize / convert 3-chars hex to 6-chars.
+      if (hex.length === 3) {
+          hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+      }
+      return [
+          parseInt(hex.slice(0, 2), 16),
+          parseInt(hex.slice(2, 4), 16),
+          parseInt(hex.slice(4, 6), 16) // b
+      ];
+  }
+  function toRGB(c) {
+      return { r: c[0], g: c[1], b: c[2] };
+  }
+  function toRgbArray(c) {
+      if (!c)
+          throw new Error('Invalid color value');
+      if (Array.isArray(c))
+          return c;
+      return typeof c === 'string' ? hexToRgbArray(c) : [c.r, c.g, c.b];
+  }
+  // http://stackoverflow.com/a/3943023/112731
+  function getLuminance(c) {
+      let i, x;
+      const a = []; // so we don't mutate
+      for (i = 0; i < c.length; i++) {
+          x = c[i] / 255;
+          a[i] = x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+      }
+      return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+  }
+  function invertToBW(color, bw, asArr) {
+      const options = (bw === true)
+          ? DEFAULT_BW
+          : Object.assign({}, DEFAULT_BW, bw);
+      return getLuminance(color) > options.threshold
+          ? (asArr ? hexToRgbArray(options.black) : options.black)
+          : (asArr ? hexToRgbArray(options.white) : options.white);
+  }
+  // -------------------------------
+  // PUBLIC MEMBERS
+  // -------------------------------
+  /**
+   *  Generates inverted (opposite) version of the given color.
+   *  @param {Color} color - Color to be inverted.
+   *  @param {BlackWhite|boolean} [bw=false] - Whether to amplify the inversion to
+   *  black or white. Provide an object to customize black/white colors.
+   *  @returns {HexColor} - Hexadecimal representation of the inverted color.
+   */
+  function invert(color, bw = false) {
+      color = toRgbArray(color);
+      if (bw)
+          return invertToBW(color, bw);
+      return '#' + color.map(c => padz((255 - c).toString(16))).join('');
+  }
+  /**
+   *  Utility methods to generate inverted version of a color.
+   *  @namespace
+   */
+  (function (invert) {
+      /**
+       *  Generates inverted (opposite) version of the given color, as a RGB object.
+       *  @alias invert.asRgbObject
+       *  @param {Color} color - Color to be inverted.
+       *  @param {BlackWhite|boolean} [bw] - Whether to amplify the inversion to
+       *  black or white. Provide an object to customize black/white colors.
+       *  @returns {RGB} - RGB object representation of the inverted color.
+       */
+      function asRGB(color, bw) {
+          color = toRgbArray(color);
+          const list = bw
+              ? invertToBW(color, bw, true)
+              : color.map(c => 255 - c);
+          return toRGB(list);
+      }
+      invert.asRGB = asRGB;
+      /**
+       *  Generates inverted (opposite) version of the given color, as a RGB array.
+       *  @param {Color} color - Color to be inverted.
+       *  @param {BlackWhite|boolean} [bw] - Whether to amplify the inversion to
+       *  black or white. Provide an object to customize black/white colors.
+       *  @returns {RGB} - RGB array representation of the inverted color.
+       */
+      function asRgbArray(color, bw) {
+          color = toRgbArray(color);
+          return bw
+              ? invertToBW(color, bw, true)
+              : color.map(c => 255 - c);
+      }
+      invert.asRgbArray = asRgbArray;
+      /**
+       *  Default luminance threshold used for amplifying inversion to black and
+       *  white.
+       *  @type {number}
+       */
+      invert.defaultThreshold = DEFAULT_THRESHOLD;
+      /**
+       *  Alias of `.asRGB()`
+       */
+      invert.asRgbObject = asRGB;
+  })(invert || (invert = {}));
+  // -------------------------------
+  // EXPORT
+  // -------------------------------
+  var invert$1 = invert;
+
+  const Selected = defineComponent();
+
+  const selectedQuery = defineQuery([Selected]);
+
+  const Visible = defineComponent();
+
+  const visibleQuery = defineQuery([Visible]);
 
   const renderSystem = (world) => {
+      const visibleEntities = visibleQuery(world);
       const camEntities = cameraQuery(world);
       const camX = Position.x[camEntities[0]];
       const camY = Position.y[camEntities[0]];
-      for (let i = 0; i < camEntities.length; i++) {
-          DISPLAY.drawText(0, DISPLAY_HEIGHT - 2, 'Hello World.', DISPLAY_WIDTH);
-          DISPLAY.drawText(0, DISPLAY_HEIGHT - 1, 'WASD to move', DISPLAY_WIDTH);
+      const offsetX = Math.floor(SCREEN_WIDTH / 2) - Math.floor(DISPLAY_WIDTH / 2);
+      const offsetY = Math.floor(SCREEN_HEIGHT / 2) - Math.floor(DISPLAY_HEIGHT / 2);
+      for (let i = 0; i < visibleEntities.length; i++) {
+          const entity = visibleEntities[i];
+          const entityX = Position.x[entity];
+          const entityY = Position.y[entity];
+          const char = '';
+          const foreground = '';
+          let background = '';
+          const drawType = Draw.tile[entity];
+          if (drawType === DrawEnum.Water)
+              background = '#5b6ee1';
+          else if (drawType === DrawEnum.Plain)
+              background = '#99e550';
+          else if (drawType === DrawEnum.Forest)
+              background = '#37946e';
+          else if (drawType === DrawEnum.Thicket)
+              background = '#1a6a49';
+          if (selectedQuery(world).includes(entity))
+              background = invert$1(background);
+          DISPLAY.draw(entityX - camX + offsetX, entityY - camY + offsetY, char, foreground, background);
       }
-      const entities = positionQuery(world);
-      for (let i = 0; i < entities.length; i++) {
-          const entity = entities[i];
+      return world;
+  };
+
+  const selectSystem = (world) => {
+      const gmId = gameManagerQuery(world)[0];
+      const selectX = GameManager.selectX[gmId];
+      const selectY = GameManager.selectY[gmId];
+      if (selectX === -1 && selectY === -1)
+          return world;
+      const camEntities = cameraQuery(world);
+      for (let i = 0; i < camEntities.length; i++) {
+          const camId = camEntities[0];
+          const camX = Position.x[camId];
+          const camY = Position.y[camId];
+          const visibleEntities = visibleQuery(world);
+          for (let j = 0; j < visibleEntities.length; j++) {
+              const vId = visibleEntities[j];
+              const entityX = Position.x[vId];
+              const entityY = Position.y[vId];
+              const offsetX = Math.floor(SCREEN_WIDTH / 2) - Math.floor(DISPLAY_WIDTH / 2);
+              const offsetY = Math.floor(SCREEN_HEIGHT / 2) - Math.floor(DISPLAY_HEIGHT / 2);
+              if (selectX === (entityX - camX + offsetX) && selectY === (entityY - camY + offsetY)) {
+                  console.log('select is visible');
+                  const selectedEntities = selectedQuery(world);
+                  for (let k = 0; k < selectedEntities.length; k++) {
+                      const selectedId = selectedEntities[k];
+                      removeComponent(world, Selected, selectedId);
+                  }
+                  addComponent(world, Selected, vId);
+                  GameManager.selectX[gameManagerQuery(world)[0]] = -1;
+                  GameManager.selectY[gameManagerQuery(world)[0]] = -1;
+              }
+          }
+      }
+      return world;
+  };
+
+  const uiSystem = (world) => {
+      const camEntities = cameraQuery(world);
+      for (let i = 0; i < camEntities.length; i++) {
+          DISPLAY.drawText(0, SCREEN_HEIGHT - 2, 'Hello World.', SCREEN_WIDTH);
+          DISPLAY.drawText(0, SCREEN_HEIGHT - 1, 'WASD to move. Left click to select tile.', SCREEN_WIDTH);
+          const offsetX = Math.floor(SCREEN_WIDTH / 2) - Math.floor(DISPLAY_WIDTH / 2);
+          const offsetY = Math.floor(SCREEN_HEIGHT / 2) - Math.floor(DISPLAY_HEIGHT / 2);
+          DISPLAY.drawText(offsetX, offsetY - 1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcd', DISPLAY_WIDTH);
+          for (let j = 0; j < DISPLAY_HEIGHT; j++) {
+              DISPLAY.draw(offsetX - 1, offsetY + j, `${j + 1}`, '', '');
+          }
+      }
+      return world;
+  };
+
+  const invisibleQuery = defineQuery([Position, Not(Visible)]);
+
+  const visibleSystem = (world) => {
+      const visibleEntities = visibleQuery(world);
+      const invisibleEntities = invisibleQuery(world);
+      const camEntities = cameraQuery(world);
+      if (camEntities.length === 0)
+          console.log('Error: Camera DNE.');
+      const camId = camEntities[0];
+      const camX = Position.x[camId];
+      const camY = Position.y[camId];
+      for (let i = 0; i < visibleEntities.length; i++) {
+          const entity = visibleEntities[i];
+          const entityX = Position.x[entity];
+          const entityY = Position.y[entity];
+          if ((entityX < camX || entityX >= camX + DISPLAY_WIDTH) ||
+              (entityY < camY || entityY >= camY + DISPLAY_HEIGHT)) {
+              removeComponent(world, Visible, entity);
+          }
+      }
+      for (let i = 0; i < invisibleEntities.length; i++) {
+          const entity = invisibleEntities[i];
           const entityX = Position.x[entity];
           const entityY = Position.y[entity];
           if ((entityX >= camX && entityX < camX + DISPLAY_WIDTH) &&
-              (entityY >= camY && entityY < camY + DISPLAY_HEIGHT - 2)) {
-              const char = '';
-              const foreground = '';
-              let background = '';
-              const drawType = Draw.tile[entity];
-              if (drawType === DrawEnum.Water)
-                  background = '#5b6ee1';
-              else if (drawType === DrawEnum.Plain)
-                  background = '#99e550';
-              else if (drawType === DrawEnum.Forest)
-                  background = '#37946e';
-              else if (drawType === DrawEnum.Thicket)
-                  background = '#1a6a49';
-              DISPLAY.draw(entityX - camX, entityY - camY, char, foreground, background);
+              (entityY >= camY && entityY < camY + DISPLAY_HEIGHT)) {
+              addComponent(world, Visible, entity);
           }
       }
       return world;
   };
 
   document.body.appendChild(DISPLAY.getContainer());
-  const pipeline = pipe(inputSystem, movementSystem, renderSystem);
+  const pipeline = pipe(inputSystem, movementSystem, visibleSystem, selectSystem, uiSystem, renderSystem);
   const world = createWorld();
-  const gameManager = addEntity(world);
-  addComponent(world, GameManager, gameManager);
+  const gm = makeGameManager(world);
   makeCamera(world);
   makeMap(world);
+  makeMouseListener(gm);
   setInterval(() => {
       pipeline(world);
   }, 16);
