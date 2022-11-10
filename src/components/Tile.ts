@@ -1,3 +1,3 @@
 import { defineComponent } from 'bitecs'
 
-export const Visible = defineComponent()
+export const Tile = defineComponent()

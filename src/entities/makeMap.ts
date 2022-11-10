@@ -4,6 +4,9 @@ import { Position } from '../components/Position'
 import { Noise } from '../components/Noise'
 import { FOREST_LIMIT, PLAIN_LIMIT, THICKET_LIMIT, WATER_LIMIT, WORLD_HEIGHT, WORLD_WIDTH } from '../lib/settings'
 import { Draw, DrawEnum } from '../components/Draw'
+import { Tile } from '../components/Tile'
+
+export const TILES = new Map<string, number>()
 
 export const makeMap = (world: IWorld) => {
     const noise2D = new RotNoise.Simplex()
@@ -12,6 +15,10 @@ export const makeMap = (world: IWorld) => {
 
             // Create entity
             const eid = addEntity(world)
+            TILES.set(`${x},${y}`, eid)
+
+            // Add Tile component
+            addComponent(world, Tile, eid)
 
             // Add Position component
             addComponent(world, Position, eid)
