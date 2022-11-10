@@ -1,7 +1,7 @@
 import { addComponent, addEntity, IWorld } from 'bitecs'
 import { Camera } from '../components/Camera'
 import { Position } from '../components/Position'
-import { DISPLAY_HEIGHT, DISPLAY_WIDTH, WORLD_HEIGHT, WORLD_WIDTH } from '../settings'
+import { DISPLAY_HEIGHT, DISPLAY_WIDTH, WORLD_HEIGHT, WORLD_WIDTH } from '../lib/settings'
 
 export const makeCamera = (world: IWorld) => {
     const eid = addEntity(world)

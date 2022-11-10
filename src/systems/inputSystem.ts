@@ -3,7 +3,7 @@ import { KEYS } from 'rot-js'
 import { Position } from '../components/Position'
 import { cameraQuery } from '../queries/cameraQuery'
 import { gameManagerEnterQuery } from '../queries/gameManagerQuery'
-import { DISPLAY_HEIGHT, DISPLAY_WIDTH, WORLD_HEIGHT, WORLD_WIDTH } from '../settings'
+import { DISPLAY_HEIGHT, DISPLAY_WIDTH, WORLD_HEIGHT, WORLD_WIDTH } from '../lib/settings'
 
 const keyMap: { [key: number]: number } = {}
 keyMap[KEYS.VK_W] = 0 // up

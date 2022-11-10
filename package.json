@@ -41,6 +41,7 @@
     },
     "dependencies": {
         "bitecs": "^0.3.38",
+        "invert-color": "^2.0.0",
         "rot-js": "^2.2.0"
     }
 }

@@ -1,9 +1,9 @@
 import { Display } from 'rot-js'
-import { DISPLAY_FONT_SIZE, DISPLAY_HEIGHT, DISPLAY_WIDTH } from './settings'
+import { DISPLAY_FONT_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH } from './settings'
 
 export const DISPLAY = new Display({
-    width: DISPLAY_WIDTH,
-    height: DISPLAY_HEIGHT,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
     fontSize: DISPLAY_FONT_SIZE,
     forceSquareRatio: true
 })
