@@ -9,7 +9,7 @@ export const uiSystem = (world: IWorld) => {
     // Draw text
     for (let i = 0; i < camEntities.length; i++) {
         DISPLAY.drawText(0, SCREEN_HEIGHT - 2, 'Hello World.', SCREEN_WIDTH)
-        DISPLAY.drawText(0, SCREEN_HEIGHT - 1, 'WASD to move. Left click to select tile.', SCREEN_WIDTH)
+        DISPLAY.drawText(0, SCREEN_HEIGHT - 1, 'WASD to move. Click to select tile.', SCREEN_WIDTH)
         // Draw legends
         //DISPLAY.drawText(offsetX, offsetY - 1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcd', DISPLAY_WIDTH)
         //DISPLAY.drawText(offsetX, offsetY - 1, '||||||||||||||||||||||||||||||', DISPLAY_WIDTH)

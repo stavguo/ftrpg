@@ -1,6 +1,7 @@
 import { IWorld } from 'bitecs'
 import invert from 'invert-color'
-import { Draw, DrawEnum } from '../components/Draw'
+import { Background, BackgroundArrayEnum } from '../components/Background'
+import { Character, CharacterArrayEnum } from '../components/Character'
 import { Position } from '../components/Position'
 import { TILES } from '../entities/makeMap'
 import { DISPLAY } from '../lib/display'
@@ -21,15 +22,10 @@ export const renderSystem = (world: IWorld) => {
             const entityX = Position.x[entity]
             const entityY = Position.y[entity]
 
-            const char = ''
+            // Somehow get character from tile, maybe character map
+            const char = CharacterArrayEnum[Character.type[entity]]
             const foreground = ''
-            let background = ''
-            const drawType = Draw.tile[entity]
-            // If a map tile (water, plain, forest, thicket)
-            if (drawType === DrawEnum.Water) background = '#5b6ee1'
-            else if (drawType === DrawEnum.Plain) background = '#99e550'
-            else if (drawType === DrawEnum.Forest) background = '#37946e'
-            else if (drawType === DrawEnum.Thicket) background = '#1a6a49'
+            let background = BackgroundArrayEnum[Background.type[entity]]
 
             if (selectedQuery(world).includes(entity)) background = invert(background)
             DISPLAY.draw(entityX - camX + offsetX, entityY - camY + offsetY, char, foreground, background)
